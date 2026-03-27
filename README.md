@@ -14,8 +14,8 @@
 
 Click the green button on the repo, and choose the SSH clone option. Copy the link and open a terminal session. 
 ```
-$ git clone git@github.com:
-$ cd <repo name>
+$ git clone git@github.com:isabelz13/shiii_man_isabelz13_seanyutot_aoanulh2789_haowenx2_owenz20.git p4
+$ cd p4
 $ python -m venv venv
 ```
 For Linux and Mac users
