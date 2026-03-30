@@ -8,7 +8,7 @@
 - Owen Zeng
 
 ## Description:
-Gerrymandering has been long part of American politics but is a complex process involving many demographic layers considered when redrawing district lines. This simulation attempts to educate users in understanding how their legistlature may be considering their area's income level along with party registration data in order to determine how to draw district lines for the upcoming election.
+Gerrymandering has been long part of American politics but is a complex process involving many demographic layers considered when redrawing district lines. This simulation attempts to educate users in understanding how their legislature may be considering their area's income level along with party registration data in order to determine how to draw district lines for the upcoming election.
 
 ## Install Guide:
 
