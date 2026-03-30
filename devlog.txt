@@ -2,3 +2,8 @@ seanT -- 2026-03-27 14:13
 Revised readme to include full header, description, and guide
 
 INITIAL DEVLOG REVIEW -- 2026-03-27
+- Revised components map
+- Updated description reflection game/simulator intent
+- Revised site map to simplify pages
+- Included preliminary files
+- Updated delivery target date
