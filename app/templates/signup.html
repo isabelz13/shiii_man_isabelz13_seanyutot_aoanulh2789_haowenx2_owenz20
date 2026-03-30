@@ -1,0 +1,29 @@
+<!--
+  Isabel Zheng, Araf Hoque, Sean Takahashi, Haowen Xiao, Owen Zeng
+  shiii_man
+  SoftDev
+  P04
+  2026-04-20m
+-->
+
+{% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
+{% block content %}
+
+<h1 class="col-md-9 mx-auto text-center">Create Account</h1>
+
+<p>To register a new account, please input a <strong> username</strong> and <i>strong</i> <strong>password</strong> combination below!</p>
+
+<form action="{{ url_for('auth.signup_post') }}" method="POST">
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input type="text" class="form-control" name="username" placeHolder="Username" id="username"></input>
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input type="password" class="form-control" name="password" placeHolder="Password" id="password" ></input>
+  </div>
+  <button type="submit" class="btn btn-primary">Register</button>
+</form>
+
+{% endblock %}
