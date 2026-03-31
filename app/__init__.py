@@ -5,7 +5,7 @@
 # 2026-04-20m
 
 from flask import Flask, render_template, request, flash, url_for, redirect, session
-
+import folium
 import utility
 
 app = Flask(__name__)
@@ -27,7 +27,20 @@ def check_authentification():
 
 @app.get('/')
 def home_get():
-    return render_template('home.html')
+    m = folium.Map(
+        location=[40.7128, -74.0060],
+        zoom_start=11,
+        tiles="CartoDB Positron"
+    )
+
+    folium.Marker(
+        [40.7128, -74.0060],
+        popup="New York City",
+        tooltip="NYC"
+    ).add_to(m)
+
+    map_html = m._repr_html_()
+    return render_template('home.html', map_html=map_html)
 
 @app.get('/profile')
 def profile_get():
