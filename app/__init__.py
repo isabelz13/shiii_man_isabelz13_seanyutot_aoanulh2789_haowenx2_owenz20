@@ -29,5 +29,11 @@ def check_authentification():
 def home_get():
     return render_template('home.html')
 
+@app.get('/profile')
+def profile_get():
+    user = utility.get_user(session["username"])
+
+    return render_template('profile.html', user=user)
+
 if __name__ == '__main__':
     app.run(debug=True)
