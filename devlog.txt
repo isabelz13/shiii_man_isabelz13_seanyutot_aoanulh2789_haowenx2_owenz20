@@ -12,3 +12,10 @@ seanT -- 2026-03-30 12:46
 - Added revised design doc
 - Added team flag
 - Added data files
+
+seanT -- 2026-03-30 11:30
+- Copied over basic components from previous project
+- Working flask app
+
+seanT -- 2026-03-30 22:48
+- Profile file added
