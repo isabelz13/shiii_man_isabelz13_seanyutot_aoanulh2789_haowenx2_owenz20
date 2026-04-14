@@ -10,6 +10,9 @@
 ## Description:
 Gerrymandering has been long part of American politics but is a complex process involving many demographic layers considered when redrawing district lines. This simulation attempts to educate users in understanding how their legislature may be considering their area's income level along with party registration data in order to determine how to draw district lines for the upcoming election.
 
+## Live Site:
+Our program is hosted live [here](http://45.55.195.253:5000)
+
 ## Install Guide:
 
 Click the green button on the repo, and choose the SSH clone option. Copy the link and open a terminal session. 
