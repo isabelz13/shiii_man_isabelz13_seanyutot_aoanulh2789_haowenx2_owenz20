@@ -1,0 +1,20 @@
+<!--
+ Isabel Zheng, Araf Hoque, Sean Takahashi, Haowen Xiao, Owen Zeng
+ shiii_man
+ SoftDev
+ P04
+ 2026-04-20m
+-->
+
+{% extends "base.html" %}
+{% block title %}Game{% endblock %}
+{% block content %}
+
+<h1 class="col-md-9 mx-auto text-center fw-semibold">Game</h1>
+
+
+<div class="mx-auto" style="width: 100%; max-width: 1100px;">
+  {{ map_html|safe }}
+</div>
+
+{% endblock %}

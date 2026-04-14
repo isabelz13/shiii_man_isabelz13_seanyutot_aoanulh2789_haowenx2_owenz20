@@ -42,6 +42,23 @@ def home_get():
     map_html = m._repr_html_()
     return render_template('home.html', map_html=map_html)
 
+@app.get('/')
+def game_get():
+    m = folium.Map(
+        location=[40.7128, -74.0060],
+        zoom_start=11,
+        tiles="CartoDB Positron"
+    )
+
+    folium.Marker(
+        [40.7128, -74.0060],
+        popup="New York City",
+        tooltip="NYC"
+    ).add_to(m)
+
+    map_html = m._repr_html_()
+    return render_template('game.html', map_html=map_html)
+
 @app.get('/profile')
 def profile_get():
     user = utility.get_user(session["username"])
