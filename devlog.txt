@@ -24,3 +24,7 @@ aoanulH -- 2026-03-31 7:32
 - Added map.html (folium)
 - imported folium into flask application
 - Currently showing a basic map of NYC (just playing around with the library for now)
+
+seanT -- 2026-04-14 11:43
+- Added election district geojson file
+- Live site listed in readme
