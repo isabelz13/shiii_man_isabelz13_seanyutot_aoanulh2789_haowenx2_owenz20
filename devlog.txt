@@ -28,3 +28,7 @@ aoanulH -- 2026-03-31 7:32
 seanT -- 2026-04-14 11:43
 - Added election district geojson file
 - Live site listed in readme
+
+aoanulH -- 2026-04-14 21:57
+- Added GeoJSON layer onto folium map via file reader
+- Fixed some noticeable bugs in code, and optimized the folium map by making it a function
