@@ -17,43 +17,29 @@ CREATE TABLE profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
     password TEXT,
-    equipped_weapon TEXT,
-    level INTEGER DEFAULT 1,
-    xp INTEGER DEFAULT 0,
-    health INTEGER DEFAULT 100,
-    country TEXT DEFAULT 'USA',
-    balance INTEGER DEFAULT 100
 );""")
 
 c.executescript("""
-DROP TABLE IF EXISTS fish;
-CREATE TABLE fish (
-    scientific_name TEXT,
-    owner INTEGER,
-    number_caught INTEGER DEFAULT 1,
-    number_owned INTEGER DEFAULT 1,
-    FOREIGN KEY (owner) REFERENCES profiles(id)
+DROP TABLE IF EXISTS saved_maps;
+CREATE TABLE saved_maps (
+    map_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    map_name TEXT UNIQUE,
+    created_at TIMESTAMP CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES profiles(id)
 );""")
 
 c.executescript("""
-DROP TABLE IF EXISTS weapons;
-CREATE TABLE weapons (
-    name TEXT,
-    owner INTEGER,
-    number_owned INTEGER DEFAULT 1,
-    durability INTEGER,
-    FOREIGN KEY (owner) REFERENCES profiles(id)
+DROP TABLE IF EXISTS map_gmed;
+CREATE TABLE map_gmed (
+    map_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    election_district INTEGER,
+    assembly_district INTEGER,
+    assigned_district_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES profiles(id)
 );""")
 
-c.executescript("""
-DROP TABLE IF EXISTS achievements;
-CREATE TABLE achievements (
-    name TEXT,
-    description TEXT,
-    user INTEGER,
-    time_received DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user) REFERENCES profiles(id)
-);""")
 
 db.commit()
 db.close()
