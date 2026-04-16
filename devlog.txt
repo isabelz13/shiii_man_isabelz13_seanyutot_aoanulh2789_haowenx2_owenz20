@@ -33,7 +33,13 @@ aoanulH -- 2026-04-14 21:57
 - Added GeoJSON layer onto folium map via file reader
 - Fixed some noticeable bugs in code, and optimized the folium map by making it a function
 
+<<<<<<< HEAD
 seanT -- 2026-04-15 11:40
 - Added ZIP code geojson file
 - Debugging issues to why ZIP code geojson causes map to not load
 - Fixed utility file to properly create db and delete previous project carryover
+=======
+aoanulH -- 2026-04-15 23:08
+- Created a function that cleans geojson properties making it compatible with folium (__init__.py)
+- Added Zip codes to folium map as a layer (__init__.py)
+>>>>>>> 208a429be3506e084a23b4b44c19ded482dcd7d7
