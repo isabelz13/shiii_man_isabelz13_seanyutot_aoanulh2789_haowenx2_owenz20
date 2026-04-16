@@ -32,3 +32,8 @@ seanT -- 2026-04-14 11:43
 aoanulH -- 2026-04-14 21:57
 - Added GeoJSON layer onto folium map via file reader
 - Fixed some noticeable bugs in code, and optimized the folium map by making it a function
+
+seanT -- 2026-04-15 11:40
+- Added ZIP code geojson file
+- Debugging issues to why ZIP code geojson causes map to not load
+- Fixed utility file to properly create db and delete previous project carryover
