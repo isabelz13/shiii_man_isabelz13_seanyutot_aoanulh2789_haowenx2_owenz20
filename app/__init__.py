@@ -27,6 +27,19 @@ def check_authentification():
             session.pop('username', None)
             return redirect(url_for("auth.login_get"))
 
+def clean_geojson(geojson_data):
+    for feature in geojson_data.get("features", []):
+        props = feature.get("properties", {})
+        cleaned_props = {}
+
+        for key, value in props.items():
+            new_key = key.lstrip(":").replace(":", "_").replace("-", "_")
+            cleaned_props[new_key] = value
+
+        feature["properties"] = cleaned_props
+
+    return geojson_data
+
 def build_map():
     m = folium.Map(
         location=[40.7128, -74.0060],
@@ -40,26 +53,51 @@ def build_map():
         tooltip="NYC"
     ).add_to(m)
 
-    geojson_path = Path(__file__).resolve().parent.parent / "data" / "nyed_18d.geojson"
+    data_folder = Path(__file__).resolve().parent.parent / "data"
 
-    with open(geojson_path, "r", encoding="utf-8") as f:
-        geojson_data = json.load(f)
+    election_path = data_folder / "nyed_18d.geojson"
+    zipcode_path = data_folder / "ZipCode.geojson"
+
+    with open(election_path, "r", encoding="utf-8") as f:
+        election_data = json.load(f)
+
+    with open(zipcode_path, "r", encoding="utf-8") as f:
+        zipcode_data = json.load(f)
+    zipcode_data = clean_geojson(zipcode_data)
+
+    # Election districts layer
+    election_fg = folium.FeatureGroup(name="Election Districts", show=True)
 
     folium.GeoJson(
-        geojson_data,
-        name="Election Districts",
+        election_data,
         style_function=lambda feature: {
             "fillColor": "#3388ff",
             "color": "#3388ff",
             "weight": 1,
             "fillOpacity": 0.2
         },
-    ).add_to(m)
+
+    ).add_to(election_fg)
+
+    election_fg.add_to(m)
+
+    zipcode_fg = folium.FeatureGroup(name="Zip Codes", show=False)
+
+    folium.GeoJson(
+        zipcode_data,
+        style_function=lambda feature: {
+            "fillColor": "#7aff99",
+            "color": "#418952",
+            "weight": 1,
+            "fillOpacity": 0.15
+        },
+    ).add_to(zipcode_fg)
+
+    zipcode_fg.add_to(m)
 
     folium.LayerControl().add_to(m)
 
     return m
-
 @app.get('/')
 def home_get():
     m = build_map()
