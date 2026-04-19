@@ -50,3 +50,8 @@ seanT -- 2026-04-17 10:10
 - Cleaned CSV income data to get rid of non-NYC zip codes
 - Starting to look into connecting backend csv data with shape selected on map
 
+aoanulH -- 2026-04-19 17:24
+- Reprocessed CSV income data so it shows NYC Zipcodes and Median Income in columns for folium compatibility
+- Added Income Data and turned ZipCode GeoJSON into a choropleth map
+- Added a new GeoJSON called "Zip Code ToolTip" which allows users to hover over zipcodes displaying the specific zipcode and median income for that polygon
+
