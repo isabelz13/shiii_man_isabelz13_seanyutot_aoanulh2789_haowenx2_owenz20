@@ -19,10 +19,11 @@ app.register_blueprint(auth.bp)
 
 @app.before_request
 def check_authentification():
-    if 'username' not in session.keys() and request.blueprint != 'auth' and request.path != '/':
+    allowed_paths = ['/', '/auth/login', '/auth/signup']
+    if 'username' not in session.keys() and request.path not in allowed_paths:
         flash("Please log in to view our website", "danger")
         return redirect(url_for("auth.login_get"))
-    elif 'username' in session.keys():
+    elif 'username' in session:
         user = utility.get_user(session['username'])
         if user is None:
             session.pop('username', None)
