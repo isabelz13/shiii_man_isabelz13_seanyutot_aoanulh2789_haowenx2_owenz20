@@ -43,7 +43,7 @@ def signup_post():
 def logout_get():
     session.pop('username', None)
     flash("Logout successful!", 'success')
-    return render_template('login.html')
+    return redirect(url_for('auth.login_get'))
 
 @bp.get('/login')
 def login_get():
