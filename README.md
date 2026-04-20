@@ -1,17 +1,29 @@
 # Gerrymandering Simulator by shiii_man
 
 ## Roster/Roles:
-- Isabel Zheng (PM)
-- Araf Hoque
-- Sean Takahashi
-- Haowen Xiao
-- Owen Zeng
+- Isabel Zheng (PM): 
+- Araf Hoque: folium mapping
+- Sean Takahashi: data management, data linkage to map using pandas
+- Haowen Xiao: CSS, testing app, map configurations
+- Owen Zeng: 
 
 ## Description:
-Gerrymandering has been long part of American politics but is a complex process involving many demographic layers considered when redrawing district lines. This simulation attempts to educate users in understanding how their legislature may be considering their area's income level along with party registration data in order to determine how to draw district lines for the upcoming election.
+Gerrymandering has been long part of American politics but is a complex process involving many demographic layers considered when redrawing district lines. This simulation attempts to educate users in understanding how their legislature may be considering their area's income level along with party registration data in order to determine how to draw district lines for the upcoming election taking into consideration trends of income with voting patterns.
 
 ## Live Site:
 Our program is hosted live [here](http://45.55.195.253:5000)
+
+### FEATURE SPOTLIGHT
+* blah blah blah, at line xx in file ___, etc
+* yadda yadda at line x in file foo...
+* interact w/ ___ on page ___ to...
+* cool thing to do as user... (try this!)
+
+### KNOWN BUGS/ISSUES
+* spider
+* ant
+* PTSD
+* etc
 
 ## Install Guide:
 
