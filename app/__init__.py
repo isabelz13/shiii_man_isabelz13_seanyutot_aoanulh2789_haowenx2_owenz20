@@ -45,7 +45,9 @@ def clean_geojson(geojson_data):
 def build_map():
     m = folium.Map(
         location=[40.7128, -74.0060],
-        zoom_start=11,
+        zoom_start=10,
+        min_zoom=10,
+        max_bounds=True,
         tiles="CartoDB Positron"
     )
 
