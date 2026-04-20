@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS profiles;
 CREATE TABLE profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
-    password TEXT,
+    password TEXT
 );""")
 
 c.executescript("""

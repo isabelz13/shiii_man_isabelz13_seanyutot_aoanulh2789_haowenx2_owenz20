@@ -71,24 +71,33 @@ def build_map():
     zipcode_data = clean_geojson(zipcode_data)
 
     income_data["ZIP"] = (
-    income_data["ZIP"]
+    income_data["NAME"]
     .astype(str)
     .str.replace(".0", "", regex=False)
     .str.strip()
     .str.zfill(5)
     )
 
+    income_data["S1901_C01_012E"] = (
+    income_data["S1901_C01_012E"]
+    .astype(str)
+    .str.replace(",", "", regex=False)
+    .str.replace("+", "", regex=False)
+    .str.strip()
+    )
+
     election_fg = folium.FeatureGroup(name="Election Districts", show=True)
-    income_data["MedianIncome"] = pandas.to_numeric(income_data["MedianIncome"], errors="coerce")
+    income_data["MedianIncome"] = pandas.to_numeric(income_data["S1901_C01_012E"], errors="coerce")
     income_lookup = dict(zip(income_data["ZIP"], income_data["MedianIncome"]))
 
     for feature in zipcode_data["features"]:
+
         zip_code = str(feature["properties"].get("modzcta", "")).zfill(5)
-       # print(zip_code)
+        #print(zip_code)
         # print(income_lookup)
         income = income_lookup.get(zip_code)
         
-
+        feature["properties"]["modzcta"] = zip_code
         feature["properties"]["MedianIncome"] = "$" + str(income)
     folium.GeoJson(
         election_data,
@@ -112,8 +121,8 @@ def build_map():
         line_opacity=0.2,
         nan_fill_color="gray",
         legend_name="Median Income",
-        name="Zip Code and Median Income",
-        show=False
+        name="Median Income Heat Map",
+        show=True
     ).add_to(m)
     folium.GeoJson(
         zipcode_data,
