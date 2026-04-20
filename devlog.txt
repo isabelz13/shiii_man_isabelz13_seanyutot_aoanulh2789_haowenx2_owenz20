@@ -58,3 +58,7 @@ aoanulH -- 2026-04-19 17:24
 seanT -- 2026-04-20 12:15
 - Debugging ZIP code income data showing properly
 - Fixed build_db typo
+
+isabelZ -- 2026-04-20 02:29 
+- Small fixes in login, logout, auth paths
+- Need to update __init__.py to be able to pull dataset info from db instead of rendering (SQLite DB) 
