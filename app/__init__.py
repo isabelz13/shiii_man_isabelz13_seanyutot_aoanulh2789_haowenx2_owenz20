@@ -29,12 +29,12 @@ def check_authentification():
             session.pop('username', None)
             return redirect(url_for("auth.login_get"))
 
-def clean_geojson(geojson_data):
-    for feature in geojson_data.get("features", []):
-        props = feature.get("properties", {})
+def clean_geojson(geojson_data): # Clean GeoJSON
+    for feature in geojson_data.get("features", []): # loop through every feature in the geoJSON
+        props = feature.get("properties", {}) # get the properties dictionary from it
         cleaned_props = {}
 
-        for key, value in props.items():
+        for key, value in props.items(): # Cleans up unwanted colons, underscores and stores cleaned properties
             new_key = key.lstrip(":").replace(":", "_").replace("-", "_")
             cleaned_props[new_key] = value
 
@@ -43,82 +43,100 @@ def clean_geojson(geojson_data):
     return geojson_data
 
 def build_map():
-    m = folium.Map(
+    m = folium.Map( # Creating the base map where we center in NYC
         location=[40.7128, -74.0060],
         zoom_start=10,
         min_zoom=10,
         max_bounds=True,
-        min_lat=40.4,
-        max_lat=40.95,
-        min_lon=-74.35,
-        max_lon=-73.65,
         tiles="CartoDB Positron"
     )
 
-    folium.Marker(
-        [40.7128, -74.0060],
-        popup="New York City",
-        tooltip="NYC"
-    ).add_to(m)
 
-    data_folder = Path(__file__).resolve().parent.parent / "data"
+    data_folder = Path(__file__).resolve().parent.parent / "data" # Path that leads to our csv and geojson
 
-    election_path = data_folder / "nyed_18d.geojson"
-    zipcode_path = data_folder / "ZipCode.geojson"
-    income_path = data_folder / "IncomeData.csv"
+    election_path = data_folder / "nyed_18d.geojson" # Path to Election GeoJSON
+    zipcode_path = data_folder / "ZipCode.geojson" # Path to Zipcode GeoJSON
+    income_path = data_folder / "IncomeData.csv" # Path to Income CSV
+    voter_path =  data_folder /  "VoteRegistration2018.csv" # Path to Voter CSV
 
-    income_data = pandas.read_csv(income_path)
+    income_data = pandas.read_csv(income_path) # using pandas to read the income csv
+    voter_data = pandas.read_csv(voter_path) # using pandas to read the voter registration csv
 
-    with open(election_path, "r", encoding="utf-8") as f:
+    with open(election_path, "r", encoding="utf-8") as f: # Using file reader to load the geojson
         election_data = json.load(f)
 
-    with open(zipcode_path, "r", encoding="utf-8") as f:
+    with open(zipcode_path, "r", encoding="utf-8") as f: # Using file reader to load the geojson
         zipcode_data = json.load(f)
 
-    zipcode_data = clean_geojson(zipcode_data)
+    zipcode_data = clean_geojson(zipcode_data) # Zipcode GeoJSON wasn't compatible with 
 
-    income_data["ZIP"] = (
-    income_data["ZIP"]
-    .astype(str)
-    .str.replace(".0", "", regex=False)
-    .str.strip()
-    .str.zfill(5)
+    income_data["ZIP"] = income_data["ZIP"].astype(str) # Zipcode should be treated as a string, since it identifies NYC areas
+
+    voter_data["DistrictID"] = (  # Since the ElectDist values in our election districts combine the assembly district and election district we have to create a new column where thats the case
+        voter_data["AssemblyDistrict"].astype(str).str.zfill(2) +
+        voter_data["ElectionDistrict"].astype(str).str.zfill(3) #  There should be 5 digits to match ElectDist property value
+    ).astype(int)
+
+    party_counts = ( # Groups voter data by district and party and counts
+    voter_data.groupby(["DistrictID", "PoliticalParty.18"])
+    .size()
+    .reset_index(name="Count")
     )
 
-    income_data["MedianIncome"] = (
-    income_data["MedianIncome"]
-    .astype(str)
-    .str.replace(",", "", regex=False)
-    .str.replace("+", "", regex=False)
-    .str.strip()
-    )
+    Popular_party = party_counts.loc[ # Finds the row with the highest count in each district
+    party_counts.groupby("DistrictID")["Count"].idxmax() # groups party counts by district only and looks at the Count 
+    ].copy()
+    
+    election_fg = folium.FeatureGroup(name="Election Districts", show=True) # Election Group
+    income_data["MedianIncome"] = pandas.to_numeric(income_data["MedianIncome"], errors="coerce") # Median Income into ints
+    income_lookup = dict(zip(income_data["ZIP"], income_data["MedianIncome"]))  # matches each zipcode to its median income
+    party_lookup = dict(zip(Popular_party["DistrictID"], Popular_party["PoliticalParty.18"])) # creates a dictionary of district id: politcal  party
 
-    election_fg = folium.FeatureGroup(name="Election Districts", show=True)
-    income_data["MedianIncome"] = pandas.to_numeric(income_data["MedianIncome"], errors="coerce")
-    income_lookup = dict(zip(income_data["ZIP"], income_data["MedianIncome"]))
+    party_colors = {  # party Colors. Blue for dem, red for republican. Makes sense.
+        "DEM": "blue",
+        "REP": "red",
+        "BLK": "green",
+        "WEP": "purple",
+        "IND": "orange",
+        "CON": "pink",
+        "GRE": "darkgreen",
+        "WOR": "brown",
+        "OTH": "gray"
+    }
 
-    for feature in zipcode_data["features"]:
+    for feature in election_data["features"]:
+        district_id = feature["properties"]["ElectDist"] #ElectDist in the geojson is the district id
+        party = party_lookup.get(district_id, "OTH") #get the Popular party for that district id, and if u cant then assign other
+        feature["properties"]["PopularParty"] = party  # Add the Popular party to district properties in the geojson
+        
+    for feature in zipcode_data["features"]: #loop through each modzcta in geojson
 
-        zip_code = str(feature["properties"].get("modzcta", "")).zfill(5)
+        zip_code = str(feature["properties"].get("modzcta", "")).zfill(5) # makes sure the modzcta is 5 digits for zipcode
         #print(zip_code)
         # print(income_lookup)
-        income = income_lookup.get(zip_code)
+        income = income_lookup.get(zip_code) # get thei ncome for that zipcode
 
-        feature["properties"]["modzcta"] = zip_code
-        feature["properties"]["MedianIncome"] = "$" + str(income)
-    folium.GeoJson(
+        feature["properties"]["modzcta"] = zip_code # modzcta refers to zipcode
+        feature["properties"]["MedianIncome"] = "$" + str(income) # Concatenates $income
+
+    folium.GeoJson( #GeoJSON map creation
         election_data,
-        style_function=lambda feature: {
-            "fillColor": "#3388ff",
-            "color": "#3388ff",
+        style_function=lambda feature: { # Styling
+            "fillColor": party_colors.get(feature["properties"].get("PopularParty", "OTH"), "gray"),
+            "color": "black",
             "weight": 1,
-            "fillOpacity": 0.2
-        }
-    ).add_to(election_fg)
+            "fillOpacity": 0.6
+        },
+        tooltip=folium.GeoJsonTooltip( # Creating a tool tip to inform observers of the District ID and popular party
+            fields=["ElectDist", "PopularParty"],
+            aliases=["Election District:", "Popular Party:"],
+            labels=True
+        )
+    ).add_to(election_fg) # Add to group
 
-    election_fg.add_to(m)
+    election_fg.add_to(m)  # Add feature group to main map
 
-    folium.Choropleth(
+    folium.Choropleth( # Create a chloropethm map for median income to zipcode
         geo_data=zipcode_data,
         data=income_data,
         columns=["ZIP", "MedianIncome"],
@@ -131,7 +149,8 @@ def build_map():
         name="Median Income Heat Map",
         show=True
     ).add_to(m)
-    folium.GeoJson(
+
+    folium.GeoJson( # Create a GeoJSON for zipcode tooltip since tooltip is only a feature for GeoJSON map
         zipcode_data,
         name="Zip Code ToolTip",
         style_function=lambda feature: {
