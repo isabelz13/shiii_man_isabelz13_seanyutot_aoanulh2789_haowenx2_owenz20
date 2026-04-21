@@ -10,6 +10,7 @@ import utility
 from pathlib import Path
 import json
 import pandas
+import sqlite3
 
 app = Flask(__name__)
 app.secret_key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
@@ -52,21 +53,22 @@ def build_map():
     )
 
 
-    data_folder = Path(__file__).resolve().parent.parent / "data" # Path that leads to our csv and geojson
-
-    election_path = data_folder / "nyed_18d.geojson" # Path to Election GeoJSON
-    zipcode_path = data_folder / "ZipCode.geojson" # Path to Zipcode GeoJSON
-    income_path = data_folder / "IncomeData.csv" # Path to Income CSV
-    voter_path =  data_folder /  "VoteRegistration2018.csv" # Path to Voter CSV
-
-    income_data = pandas.read_csv(income_path) # using pandas to read the income csv
-    voter_data = pandas.read_csv(voter_path) # using pandas to read the voter registration csv
-
-    with open(election_path, "r", encoding="utf-8") as f: # Using file reader to load the geojson
-        election_data = json.load(f)
-
-    with open(zipcode_path, "r", encoding="utf-8") as f: # Using file reader to load the geojson
-        zipcode_data = json.load(f)
+    conn = sqlite3.connect ("data.db") 
+    cur = conn.cursor()
+    income_rows = cur.execute ("SELECT zip, median_income FROM income").fetchall()
+    income_data = pandas.DataFrame (income_rows, columns = ["ZIP", "MedianIncome"])
+    voter_rows = cur.execute ("SELECT * FROM voter").fetchall()
+    voter_cols = [desc[0] for desc in cur.description]
+    voter_data = pandas.DataFrame (voter_rows, columns = voter_cols)
+    zip_rows = cur.execute ("SELECT geojson FROM zipcodes").fetchall()
+    zipcode_data = {"type": "FeatureCollection", "features": [json.loads(row[0]) for row in zip_rows]}
+    elec_rows = cur.execute ("SELECT geojson FROM election").fetchall()
+    election_data = {"type": "FeatureCollection", "features": [json.loads(row[0]) for row in elec_rows]}
+    conn.close()
+    print ("income rows:", len(income_rows))
+    print ("zip rows:", len(zip_rows))
+    print ("election rows:", len(elec_rows))
+    print ("voter rows:", len(voter_rows))
 
     zipcode_data = clean_geojson(zipcode_data) # Zipcode GeoJSON wasn't compatible with 
 
@@ -195,3 +197,4 @@ def profile_get():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
