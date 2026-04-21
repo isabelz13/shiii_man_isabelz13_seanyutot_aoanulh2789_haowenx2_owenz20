@@ -183,12 +183,6 @@ def home_get():
     map_html = m._repr_html_()
     return render_template('home.html', map_html=map_html)
 
-@app.get('/game')
-def game_get():
-    m = build_map()
-    map_html = m._repr_html_()
-    return render_template('game.html', map_html=map_html)
-
 @app.get('/profile')
 def profile_get():
     user = utility.get_user(session["username"])
