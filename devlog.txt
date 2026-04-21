@@ -73,3 +73,8 @@ aoanulH -- 2026-04-20 21:26
 - Revised voter registration data using google spreadsheets to fix labeling
 - Added comments to code created by me for readability and proper documentation
 - Need to beautify code and document it better
+
+isabelZ -- 2026-04-21 03:06
+- converted the rendering into inputted files through sqlite3 (changed build_db.py & __init__.py) 
+- need to double check if the information is actually saving 
+- signup is causing errors & I can't figure out why 
