@@ -67,3 +67,9 @@ seanT -- 2026-04-20 11:45
 - Fixed map bug of not showing income data 
 - README revisions for roles and last req components
 - Starting voter registration/election district mapping
+
+aoanulH -- 2026-04-20 21:26
+- Updated __init__.py to add voter registration to Election Districts
+- Revised voter registration data using google spreadsheets to fix labeling
+- Added comments to code created by me for readability and proper documentation
+- Need to beautify code and document it better
