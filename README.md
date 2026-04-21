@@ -1,7 +1,7 @@
 # Gerrymandering Simulator by shiii_man
 
 ## Roster/Roles:
-- Isabel Zheng (PM): 
+- Isabel Zheng (PM): database management, general debugging 
 - Araf Hoque: folium mapping
 - Sean Takahashi: data management, data linkage to map using pandas
 - Haowen Xiao: CSS, testing app, map configurations
