@@ -84,3 +84,8 @@ aoanulH  -- 2026-04-21 8:24
 - Commented on coding parts that might seem unclear to the gen public
 - Fixed CSV labeling for voter registration
 - Updated installation guide because the user needs to build the database before running the flask app
+
+owenZ - 2026-04-22 01:54
+- created game.html
+- created game functionality in __init__.py
+- stlying game.html and formatting

@@ -38,18 +38,31 @@ CREATE TABLE saved_maps (
     map_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
     map_name TEXT UNIQUE,
+    district1 INTEGER,
+    district2 INTEGER,
+    district3 INTEGER,
+    district4 INTEGER,
+    district5 INTEGER,
+    district6 INTEGER,
+    district7 INTEGER,
+    district8 INTEGER,
+    district9 INTEGER,
+    district10 INTEGER,
+    district11 INTEGER,
+    district12 INTEGER,
+    district13 INTEGER,
+    district14 INTEGER,
+    district15 INTEGER,
+    district16 INTEGER,
+    district17 INTEGER,
+    district18 INTEGER,
+    district19 INTEGER,
+    district20 INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES profiles(id)
 );
 
-CREATE TABLE map_gmed (
-    map_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    election_district INTEGER,
-    assembly_district INTEGER,
-    assigned_district_id INTEGER,
-    FOREIGN KEY (user_id) REFERENCES profiles(id)
-);
+
 
 CREATE TABLE income (
     zip TEXT,

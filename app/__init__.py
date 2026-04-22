@@ -401,6 +401,360 @@ def build_map():
 
     return m
 
+def get_election_game_data():
+    """
+    Pull all election district GeoJSON and voter counts from the database.
+    Returns (election_data geojson dict, voter_counts dict)
+    voter_counts: str(district_id) -> { "counts": {party: n}, "party": str, "margin": float }
+    """
+    conn = sqlite3.connect(DB_FILE)
+    cur = conn.cursor()
+ 
+    voter_rows = cur.execute(
+        "SELECT AssemblyDistrict, ElectionDistrict, PoliticalParty FROM voter"
+    ).fetchall()
+    elec_rows = cur.execute("SELECT geojson FROM election").fetchall()
+    conn.close()
+ 
+    voter_data = pd.DataFrame(
+        voter_rows, columns=["AssemblyDistrict", "ElectionDistrict", "PoliticalParty"]
+    )
+    election_data = {
+        "type": "FeatureCollection",
+        "features": [json.loads(row[0]) for row in elec_rows]
+    }
+    election_data = clean_geojson(election_data)
+ 
+    voter_counts = {}
+ 
+    if not voter_data.empty:
+        voter_data["DistrictID"] = (
+            voter_data["AssemblyDistrict"].astype(int).astype(str).str.zfill(2) +
+            voter_data["ElectionDistrict"].astype(int).astype(str).str.zfill(3)
+        ).astype(int)
+ 
+        party_counts = (
+            voter_data.groupby(["DistrictID", "PoliticalParty"])
+            .size()
+            .reset_index(name="Count")
+        )
+ 
+        for district_id, group in party_counts.groupby("DistrictID"):
+            total = group["Count"].sum()
+            top_row = group.loc[group["Count"].idxmax()]
+            voter_counts[str(district_id)] = {
+                "counts": dict(zip(group["PoliticalParty"], group["Count"].astype(int))),
+                "party": top_row["PoliticalParty"],
+                "margin": round(float(top_row["Count"]) / total, 3) if total > 0 else 0.5
+            }
+ 
+    # Attach dominant party + margin to each GeoJSON feature for frontend coloring
+    for feature in election_data["features"]:
+        did = int(feature["properties"]["ElectDist"])
+        info = voter_counts.get(str(did), {})
+        feature["properties"]["party"] = info.get("party", "OTH")
+        feature["properties"]["margin"] = info.get("margin", 0.5)
+ 
+    return election_data, voter_counts
+ 
+ 
+def build_adjacency_map(election_data):
+    """
+    Build a dict: str(district_id) -> [list of adjacent str(district_ids)].
+    Two districts are adjacent when their bounding boxes overlap with a small buffer.
+    """
+    id_to_bbox = {}
+    for f in election_data["features"]:
+        did = int(f["properties"]["ElectDist"])
+        id_to_bbox[did] = get_feature_bbox(f)
+ 
+    adjacency = {did: [] for did in id_to_bbox}
+    ids = list(id_to_bbox.keys())
+    buffer = 0.002  # ~200m, catches shared edges
+ 
+    for i in range(len(ids)):
+        for j in range(i + 1, len(ids)):
+            a, b = ids[i], ids[j]
+            ba, bb = id_to_bbox[a], id_to_bbox[b]
+            if ba is None or bb is None:
+                continue
+            if not (
+                ba[1] + buffer < bb[0] or
+                bb[1] + buffer < ba[0] or
+                ba[3] + buffer < bb[2] or
+                bb[3] + buffer < ba[2]
+            ):
+                adjacency[a].append(b)
+                adjacency[b].append(a)
+ 
+    return {str(k): [str(n) for n in v] for k, v in adjacency.items()}
+ 
+ 
+def is_contiguous(district_ids, adjacency_map):
+    """
+    BFS contiguity check. Returns True if all district_ids form one connected group.
+    """
+    if not district_ids:
+        return False
+    if len(district_ids) == 1:
+        return True
+ 
+    district_set = set(str(x) for x in district_ids)
+    visited = set()
+    queue = [str(district_ids[0])]
+    visited.add(str(district_ids[0]))
+ 
+    while queue:
+        current = queue.pop(0)
+        for neighbor in adjacency_map.get(current, []):
+            if neighbor in district_set and neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+ 
+    return len(visited) == len(district_set)
+ 
+ 
+def get_user_id(username):
+    """Return the integer id for a username, or None if not found."""
+    conn = sqlite3.connect(DB_FILE)
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT id FROM profiles WHERE username = ?", (username,)
+    ).fetchone()
+    conn.close()
+    return row[0] if row else None
+ 
+ 
+def make_json_response(data, status=200):
+    """Return a plain JSON response without jsonify (no new imports)."""
+    return json.dumps(data), status, {"Content-Type": "application/json"}
+
+
+@app.get('/game')
+def game_get():
+    """
+    Render the game page. Embeds GeoJSON, adjacency map, and voter counts
+    directly into the template. Also loads any previously saved maps for
+    the logged-in user.
+    """
+    election_data, voter_counts = get_election_game_data()
+    adjacency_map = build_adjacency_map(election_data)
+    total_districts = len(election_data["features"])
+ 
+    # Load this user's saved maps
+    username = session.get("username")
+    saved_maps = []
+ 
+    if username:
+        user_id = get_user_id(username)
+        if user_id:
+            conn = sqlite3.connect(DB_FILE)
+            cur = conn.cursor()
+            rows = cur.execute(
+                """
+                SELECT map_id, map_name, created_at,
+                       district1,  district2,  district3,
+                       district4,  district5,  district6,
+                       district7,  district8,  district9,
+                       district10, district11, district12,
+                       district13, district14, district15,
+                       district16, district17, district18,
+                       district19, district20
+                FROM saved_maps
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                """,
+                (user_id,)
+            ).fetchall()
+            conn.close()
+ 
+            for row in rows:
+                map_id, map_name, created_at = row[0], row[1], row[2]
+                # Columns 3-27 are district1..district25, each a JSON array of election IDs
+                assembly_districts = []
+                for i, raw in enumerate(row[3:], start=1):
+                    if raw:
+                        try:
+                            election_ids = json.loads(raw)
+                        except (ValueError, TypeError):
+                            election_ids = []
+                        assembly_districts.append({
+                            "id": i,
+                            "electionDistricts": election_ids
+                        })
+                saved_maps.append({
+                    "map_id": map_id,
+                    "map_name": map_name,
+                    "created_at": created_at,
+                    "assembly_districts": assembly_districts
+                })
+ 
+    return render_template(
+        'game.html',
+        election_geojson=json.dumps(election_data),
+        adjacency_map=json.dumps(adjacency_map),
+        voter_counts=json.dumps(voter_counts),
+        total_districts=total_districts,
+        saved_maps=json.dumps(saved_maps),
+        saved_maps_parsed=saved_maps   # raw Python list for Jinja {% for %} loop
+    )
+ 
+ 
+@app.post('/game/validate')
+def game_validate():
+    """
+    Check if a proposed assembly district is contiguous.
+    Request:  { "district_ids": [1001, 1002, ...], "adjacency_map": {...} }
+    Response: { "valid": true/false, "message": "..." }
+    """
+    data = request.get_json()
+    district_ids = data.get("district_ids", [])
+    adjacency_map = data.get("adjacency_map", {})
+ 
+    if not district_ids:
+        return make_json_response({"valid": False, "message": "No districts selected."}, 400)
+ 
+    contiguous = is_contiguous(district_ids, adjacency_map)
+ 
+    if contiguous:
+        return make_json_response({"valid": True, "message": "District is contiguous."})
+    else:
+        return make_json_response({
+            "valid": False,
+            "message": "Districts are not contiguous. All election districts must touch."
+        })
+ 
+ 
+@app.post('/game/save')
+def game_save():
+    """
+    Save a completed game to the database.
+    Inserts one row into saved_maps and one row into map_gmed.
+    Each of the 25 district columns stores a JSON array of election district IDs.
+ 
+    Request: {
+        "map_name": "My Map",
+        "assembly_districts": [
+            { "id": 1, "electionDistricts": [1001, 1002, ...], "winner": "DEM" },
+            ... (25 total)
+        ]
+    }
+    Response: { "success": true, "map_id": 5 }
+              { "success": false, "message": "..." }
+    """
+    username = session.get("username")
+    if not username:
+        return make_json_response({"success": False, "message": "Not logged in."}, 401)
+ 
+    user_id = get_user_id(username)
+    if not user_id:
+        return make_json_response({"success": False, "message": "User not found."}, 400)
+ 
+    data = request.get_json()
+    map_name = data.get("map_name", "").strip()
+    assembly_districts = data.get("assembly_districts", [])
+ 
+    if not map_name:
+        return make_json_response({"success": False, "message": "Map name cannot be empty."}, 400)
+ 
+    if len(assembly_districts) != 25:
+        return make_json_response({"success": False, "message": "Must have exactly 25 assembly districts."}, 400)
+ 
+    # Sort by id so district1 always = assembly district 1
+    assembly_districts = sorted(assembly_districts, key=lambda d: d["id"])
+ 
+    conn = sqlite3.connect(DB_FILE)
+    cur = conn.cursor()
+ 
+    try:
+        # Insert the map header row first to get the auto-incremented map_id
+        cur.execute(
+            "INSERT INTO saved_maps (user_id, map_name) VALUES (?, ?)",
+            (user_id, map_name)
+        )
+        map_id = cur.lastrowid
+ 
+        # Each district column gets a JSON array of the election district IDs it contains
+        district_cols = [
+            json.dumps([int(eid) for eid in ad["electionDistricts"]])
+            for ad in assembly_districts
+        ]
+ 
+        cur.execute(
+            """
+            INSERT INTO map_gmed (
+                map_id, user_id,
+                district1,  district2,  district3,  district4,  district5,
+                district6,  district7,  district8,  district9,  district10,
+                district11, district12, district13, district14, district15,
+                district16, district17, district18, district19, district20,
+                district21, district22, district23, district24, district25
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [map_id, user_id] + district_cols
+        )
+ 
+        conn.commit()
+        conn.close()
+        return make_json_response({"success": True, "map_id": map_id})
+ 
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        conn.close()
+        return make_json_response(
+            {"success": False, "message": f'A map named "{map_name}" already exists.'},
+            400
+        )
+ 
+ 
+@app.post('/game/score')
+def game_score():
+    """
+    Score all 25 finalized assembly districts.
+    Request: {
+        "player_party": "DEM",
+        "assembly_districts": [ { "id": 1, "election_districts": [1001, ...] }, ... ],
+        "voter_counts": { "1001": { "counts": {"DEM": 120, "REP": 80}, ... }, ... }
+    }
+    Response: {
+        "results": [ { "id": 1, "winner": "DEM", "totals": {...} }, ... ],
+        "player_seats": 14,
+        "total_seats": 25,
+        "won": true
+    }
+    """
+    data = request.get_json()
+    player_party = data.get("player_party", "DEM")
+    assembly_districts = data.get("assembly_districts", [])
+    voter_counts_raw = data.get("voter_counts", {})
+ 
+    results = []
+    player_seats = 0
+ 
+    for ad in assembly_districts:
+        ad_id = ad["id"]
+        election_ids = [str(x) for x in ad["election_districts"]]
+ 
+        # Sum all voter counts across the election districts in this assembly district
+        totals = {}
+        for eid in election_ids:
+            counts = voter_counts_raw.get(eid, {}).get("counts", {})
+            for party, count in counts.items():
+                totals[party] = totals.get(party, 0) + count
+ 
+        winner = max(totals, key=totals.get) if totals else "OTH"
+        results.append({"id": ad_id, "winner": winner, "totals": totals})
+ 
+        if winner == player_party:
+            player_seats += 1
+ 
+    return make_json_response({
+        "results": results,
+        "player_seats": player_seats,
+        "total_seats": len(assembly_districts),
+        "won": player_seats > len(assembly_districts) // 2
+    })
+    
 @app.get('/')
 def home_get():
     # Building the map for the home page
