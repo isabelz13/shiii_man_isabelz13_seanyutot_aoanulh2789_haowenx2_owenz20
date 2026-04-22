@@ -10,14 +10,35 @@
 {% block title %}Home{% endblock %}
 {% block content %}
 
-<h1 class="col-md-9 mx-auto text-center fw-semibold">Home</h1>
+<h1 class="col-md-9 mx-auto text-center font-weight-bold mb-1">NYC Voting & Income Explorer</h1>
 
-<div class="mx-auto mb-4">
-  <h2>Guide</h2>
+<div class="col-md-9 mx-auto mb-4">
+  <h2>About This Project</h2>
   <p>
-    This simulation shows the trends of party registration based on NYC election districts along with income data by ZIP code.
-    For simplification, this intends to use selection of election districts to establish electoral districts.
-    The ZIP code filter will show gradients based on median income reported, while the election districts will show gradients of concentration of party registration(Democrat, Republican)
+    This project visualizes the relationship between political party regiestration and median household income across New York City.
+    <br>
+    This interactive map lets you explore how voting patterns and income levels are distrubted across the city; it uses real data from NYC election districts and ZIP code income reports.
+    <br>
+    Built by shiii_man®
+  </p>
+</div>
+
+<div class="col-md-9 mx-auto mb-4">
+  <h2>How to Use the Map</h2>
+  <ul>
+    <li>The map displays NYC election districts color-coded by party registration concentration</li>
+    <li>Blue gradients represent Democratic registration, red gradients represent Republican registration</li>
+    <li>The income layer shows ZIP code regions shaded by median household income</li>
+    <li>Hover or click on a district to see its specific data</li>
+  </ul>
+</div>
+
+<div class="col-md-9 mx-auto mb-4">
+  <h2>Data Sources</h2>
+  <p>
+    Party registration data sourced from the NYC Board of Elections.
+    <br>
+    Income data sourced from NYC Open Data / U.S. Census Bureau ZIP code income reports.
   </p>
 </div>
 

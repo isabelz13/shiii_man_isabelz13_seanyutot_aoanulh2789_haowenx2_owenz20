@@ -67,6 +67,10 @@ def build_map():
         zoom_start=10,
         min_zoom=10,
         max_bounds=True,
+        min_lat=40.4,
+        max_lat=40.95,
+        min_lon=-74.35,
+        max_lon=-73.65,
         tiles="CartoDB Positron"
     )
 
