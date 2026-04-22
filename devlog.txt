@@ -78,3 +78,8 @@ isabelZ -- 2026-04-21 03:06
 - converted the rendering into inputted files through sqlite3 (changed build_db.py & __init__.py) 
 - need to double check if the information is actually saving 
 - signup is causing errors & I can't figure out why 
+
+aoanulH  -- 2026-04-21 8:24
+- Fixed bugs for backend: __init__.py and build_db.py
+- Commented on coding parts that might seem unclear to the gen public
+- Fixed CSV labeling for voter registration
