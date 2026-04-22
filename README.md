@@ -51,6 +51,7 @@ In terminal, access project root directory and run the command:
 
 ```
 ~$ cd app
+~$ python build_db.py
 ~$ python __init__.py
 ```
 
