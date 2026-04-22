@@ -83,3 +83,4 @@ aoanulH  -- 2026-04-21 8:24
 - Fixed bugs for backend: __init__.py and build_db.py
 - Commented on coding parts that might seem unclear to the gen public
 - Fixed CSV labeling for voter registration
+- Updated installation guide because the user needs to build the database before running the flask app
