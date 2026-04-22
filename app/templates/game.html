@@ -135,7 +135,6 @@
             <div class="modal-body text-center">
                 <p class="mb-4">
                     Draw 25 assembly districts from NYC election districts.<br>
-                    Every election district must be assigned.<br>
                     All districts must be contiguous.<br>
                     Win a majority of the 25 seats for your party.
                 </p>
@@ -520,19 +519,8 @@
     }
 
     function updateFinalizeButton() {
-        const remaining = TOTAL_DISTRICTS - state.totalAssigned;
-        const isLast = state.finalized.length === MAX_ASSEMBLY - 1;
         const hasSelection = state.current.length > 0;
-
-        if (isLast) {
-            const allIn = state.current.length === remaining;
-            document.getElementById('btn-finalize').disabled = !allIn;
-            if (hasSelection && !allIn) {
-                setMessage(`Last district must include all ${remaining} remaining. You have ${state.current.length}.`, 'alert-danger');
-            }
-        } else {
-            document.getElementById('btn-finalize').disabled = !hasSelection;
-        }
+        document.getElementById('btn-finalize').disabled = !hasSelection;
     }
 
     async function finalizeDistrict() {
