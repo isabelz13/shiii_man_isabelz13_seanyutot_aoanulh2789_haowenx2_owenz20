@@ -14,16 +14,10 @@ Gerrymandering has been long part of American politics but is a complex process 
 Our program is hosted live [here](http://45.55.195.253)
 
 ### FEATURE SPOTLIGHT
-* blah blah blah, at line xx in file ___, etc
-* yadda yadda at line x in file foo...
-* interact w/ ___ on page ___ to...
-* cool thing to do as user... (try this!)
+* Hover over election district to see stats breakdown
 
 ### KNOWN BUGS/ISSUES
-* spider
-* ant
-* PTSD
-* etc
+* Game can cause timeout error
 
 ## Install Guide:
 
