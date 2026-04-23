@@ -35,25 +35,54 @@ const PARTY_COLORS = {
     OTH: '#6c757d',
 };
 
-function getStyle(id) {
+function getStyle(id, feature = null) {
     const status = state.districtStatus[id] || 'unassigned';
-    const feature = layerMap[id] && layerMap[id].feature;
-    const party = feature && feature.properties.party || 'OTH';
+
+    // Use the passed-in GeoJSON feature first
+    // Fall back to the stored layer feature later if needed
+    const actualFeature = feature || (layerMap[id] && layerMap[id].feature);
+    const party = (actualFeature && actualFeature.properties.party) || 'OTH';
 
     if (status === 'unassigned') {
-        return { fillColor: PARTY_COLORS[party] || '#6c757d', fillOpacity: 0.15, color: '#adb5bd', weight: 0.5 };
+        return {
+            fillColor: PARTY_COLORS[party] || '#6c757d',
+            fillOpacity: 0.35,
+            color: '#adb5bd',
+            weight: 0.5
+        };
     }
     if (status === 'inprogress') {
-        return { fillColor: '#ffc107', fillOpacity: 0.6, color: '#ffc107', weight: 2 };
+        return {
+            fillColor: '#ffc107',
+            fillOpacity: 0.6,
+            color: '#ffc107',
+            weight: 2
+        };
     }
     if (status === 'neighbor') {
-        return { fillColor: '#ffffff', fillOpacity: 0.5, color: '#6c757d', weight: 1, dashArray: '4 3' };
+        return {
+            fillColor: '#ffffff',
+            fillOpacity: 0.5,
+            color: '#6c757d',
+            weight: 1,
+            dashArray: '4 3'
+        };
     }
     if (status === 'finalized') {
         const winner = state.electionToAssemblyWinner[id] || 'OTH';
-        return { fillColor: PARTY_COLORS[winner] || '#6c757d', fillOpacity: 0.8, color: '#343a40', weight: 0.5 };
+        return {
+            fillColor: PARTY_COLORS[winner] || '#6c757d',
+            fillOpacity: 0.8,
+            color: '#343a40',
+            weight: 0.5
+        };
     }
-    return { fillColor: '#e9ecef', fillOpacity: 0.3, color: '#ced4da', weight: 0.5 };
+    return {
+        fillColor: '#e9ecef',
+        fillOpacity: 0.3,
+        color: '#ced4da',
+        weight: 0.5
+    };
 }
 
 function initMap() {
@@ -62,7 +91,7 @@ function initMap() {
     });
 
     L.geoJSON(ELECTION_GEOJSON, {
-        style: f => getStyle(parseInt(f.properties.ElectDist)),
+        style: f => getStyle(parseInt(f.properties.ElectDist), f),
         onEachFeature: (feature, layer) => {
             const id = parseInt(feature.properties.ElectDist);
             layerMap[id] = layer;
