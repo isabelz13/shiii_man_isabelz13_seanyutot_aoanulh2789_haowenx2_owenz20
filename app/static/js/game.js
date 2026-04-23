@@ -127,6 +127,7 @@ function loadSavedMap(mapId) {
 
     
 
+    playerParty = saved.player_party;
     $('#startModal').modal('hide');
     document.getElementById('header-party-badge').textContent = playerParty;
     document.getElementById('header-party-badge').className = `badge badge-${playerParty === 'DEM' ? 'primary' : 'danger'}`;
@@ -164,9 +165,7 @@ function loadSavedMap(mapId) {
     updateCurrentDistrictNum();
     setMessage(`Loaded map: ${saved.map_name}`, 'alert-success');
 
-    if (state.finalized.length === MAX_ASSEMBLY) {
-        setTimeout(showFinalScore, 400);
-    }
+
 }
 
 function onDistrictClick(id) {

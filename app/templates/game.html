@@ -32,8 +32,9 @@
 
 <div class="container-fluid">
     <div class="row mb-2 align-items-center">
-        <div class="col-md-6">
-            <h2 class="mb-0">Gerrymander Simulator</h2>
+        <div class="col-md-6 d-flex align-items-center">
+            <h2 class="mb-0 mr-3">Gerrymander Simulator</h2>
+            <button class="btn btn-sm btn-outline-primary" onclick="location.href='/game'">New Game</button>
         </div>
         <div class="col-md-6 text-right">
             <span class="badge badge-secondary" id="header-party-badge"
@@ -155,7 +156,7 @@
                 <div class="list-group text-left" style="max-height: 180px; overflow-y: auto;">
                     {% for sm in saved_maps_parsed %}
                     <button class="list-group-item list-group-item-action py-2 px-3"
-                        onclick="location.href='/game?map_id={{ sm.map_id }})'">
+                        onclick="location.href='/game?map_id={{ sm.map_id }}'">
                         <div class="d-flex w-100 justify-content-between align-items-center">
                             <strong class="mb-1">{{ sm.map_name }}</strong>
                             <small class="text-muted">{{ sm.created_at[:10] }}</small>
@@ -210,7 +211,7 @@
 
                 <hr class="my-4">
                 <div class="px-3">
-                    <button class="btn btn-secondary btn-block font-weight-bold" onclick="location.reload()">PLAY
+                    <button class="btn btn-secondary btn-block font-weight-bold" onclick="location.href='/game'">PLAY
                         AGAIN</button>
                 </div>
                 <br>
