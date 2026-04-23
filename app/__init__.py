@@ -16,6 +16,22 @@ app = Flask(__name__)
 
 app.secret_key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
 
+data_folder = Path(__file__).resolve().parent.parent / "data" # Path that leads to our csv and geojson
+
+election_path = data_folder / "nyed_18d.geojson" # Path to Election GeoJSON
+zipcode_path = data_folder / "ZipCode.geojson" # Path to Zipcode GeoJSON
+income_path = data_folder / "IncomeData.csv" # Path to Income CSV
+voter_path =  data_folder /  "VoteRegistration2018.csv" # Path to Voter CSV
+
+income_data = pd.read_csv(income_path) # using pandas to read the income csv
+voter_data = pd.read_csv(voter_path) # using pandas to read the voter registration csv
+
+with open(election_path, "r", encoding="utf-8") as f: # Using file reader to load the geojson
+    election_data = json.load(f)
+
+with open(zipcode_path, "r", encoding="utf-8") as f: # Using file reader to load the geojson
+    zipcode_data = json.load(f)
+
 import auth
 
 app.register_blueprint(auth.bp)
@@ -381,26 +397,16 @@ def build_map():
 
 def get_election_game_data():
     """
-    Pull all election district GeoJSON and voter counts from the database.
+    Pull all election district GeoJSON and voter counts.
     Returns (election_data geojson dict, voter_counts dict)
     voter_counts: str(district_id) -> { "counts": {party: n}, "party": str, "margin": float }
     """
-    conn = sqlite3.connect(DB_FILE)
-    cur = conn.cursor()
- 
-    voter_rows = cur.execute(
-        "SELECT AssemblyDistrict, ElectionDistrict, PoliticalParty FROM voter"
-    ).fetchall()
-    elec_rows = cur.execute("SELECT geojson FROM election").fetchall()
-    conn.close()
- 
-    voter_data = pd.DataFrame(
-        voter_rows, columns=["AssemblyDistrict", "ElectionDistrict", "PoliticalParty"]
-    )
-    election_data = {
-        "type": "FeatureCollection",
-        "features": [json.loads(row[0]) for row in elec_rows]
-    }
+
+    data_folder = BASE_DIR / "data"
+    voter_data = pd.read_csv(data_folder / "VoteRegistration2018.csv")
+    with open(data_folder / "nyed_18d.geojson", encoding="utf-8") as f:
+        election_data = json.load(f)
+
     election_data = clean_geojson(election_data)
  
     voter_counts = {}
@@ -763,17 +769,6 @@ def profile_get():
 
     cursor = cur.execute(
             """
-            SELECT total_maps, wins FROM profiles WHERE id = ?
-            """,
-            (user,)
-        )
-    
-    output = cursor.fetchone()
-    
-    total_maps, wins = output[0], output[1]
-
-    cursor = cur.execute(
-            """
             SELECT map_id, map_name, created_at FROM saved_maps WHERE user_id = ?
             """,
             (user,)
@@ -784,7 +779,7 @@ def profile_get():
     conn.close()
 
     # Show the profile page
-    return render_template('profile.html', user=user, total_maps=total_maps, wins=wins, saved_maps=saved_maps)
+    return render_template('profile.html', user=user, saved_maps=saved_maps)
 
 if __name__ == '__main__':
     # Run the Flask app in debug mode
