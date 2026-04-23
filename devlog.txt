@@ -85,6 +85,9 @@ aoanulH  -- 2026-04-21 8:24
 - Fixed CSV labeling for voter registration
 - Updated installation guide because the user needs to build the database before running the flask app
 
+seanT -- 2026-04-21 01:00
+- troubleshooting serving on vm, not enough RAM space/timeout
+
 owenZ - 2026-04-22 01:54
 - created game.html
 - created game functionality in __init__.py
@@ -92,3 +95,8 @@ owenZ - 2026-04-22 01:54
 
 aoanulH -- 2026-04-22 22:21
 - fixed a bug in game.js where election districts only displayed the correct color after hover. 
+
+seanT -- 2026-04-22 22:49
+- fixing save map functionality to properly save to db and load on profile page
+- fixing game loading to allow for multiple games instead of loading previous results
+- updated profile page to link previously saved maps
