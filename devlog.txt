@@ -89,3 +89,6 @@ owenZ - 2026-04-22 01:54
 - created game.html
 - created game functionality in __init__.py
 - stlying game.html and formatting
+
+aoanulH -- 2026-04-22 22:21
+- fixed a bug in game.js where election districts only displayed the correct color after hover. 
