@@ -31,13 +31,16 @@ DROP TABLE IF EXISTS voter;
 CREATE TABLE profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
-    password TEXT
+    password TEXT,
+    total_maps INTEGER,
+    wins INTEGER
 );
 
 CREATE TABLE saved_maps (
     map_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
     map_name TEXT UNIQUE,
+    player_party TEXT,
     district1 INTEGER,
     district2 INTEGER,
     district3 INTEGER,

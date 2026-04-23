@@ -38,7 +38,7 @@
         <div class="col-md-6 text-right">
             <span class="badge badge-secondary" id="header-party-badge"
                 style="font-size: 1.1em; padding: 0.4em 0.6em;"></span>
-            <span class="ml-3 text-muted">Drawn: <strong class="text-dark" id="header-drawn">0</strong>/25</span>
+            <span class="ml-3 text-muted">Drawn: <strong class="text-dark" id="header-drawn">0</strong>/20</span>
             <span class="ml-3 text-muted">Assigned: <strong class="text-dark" id="header-assigned">0</strong>/<span
                     id="header-total">—</span></span>
         </div>
@@ -134,9 +134,9 @@
             </div>
             <div class="modal-body text-center">
                 <p class="mb-4">
-                    Draw 25 assembly districts from NYC election districts.<br>
+                    Draw 20 assembly districts from NYC election districts.<br>
                     All districts must be contiguous.<br>
-                    Win a majority of the 25 seats for your party.
+                    Win a majority of the 20 seats for your party.
                 </p>
                 <div class="row px-3">
                     <div class="col-6 pr-1">
@@ -213,6 +213,10 @@
                     <button class="btn btn-secondary btn-block font-weight-bold" onclick="location.reload()">PLAY
                         AGAIN</button>
                 </div>
+                <br>
+                <div class="px-3">
+                    <a href="{{ url_for('profile_get') }}" class="btn btn-secondary btn-block font-weight-bold">EXIT</a>
+                </div>
             </div>
         </div>
     </div>
@@ -224,7 +228,8 @@
     const VOTER_COUNTS = {{ voter_counts | safe }};
     const TOTAL_DISTRICTS = {{ total_districts }};
     const SAVED_MAPS = {{ saved_maps | safe }};
-    const MAX_ASSEMBLY = 25;
+    const LOAD_MAP_ID = {{ load_map_id | tojson }};
+    const MAX_ASSEMBLY = 20;
 </script>
 
 <script src="{{ url_for('static', filename='js/game.js') }}"></script>

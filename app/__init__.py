@@ -24,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DB_FILE = "data.db"
 
+
 @app.before_request
 def check_authentification():
     # Routes people can access without being logged in
@@ -537,6 +538,8 @@ def game_get():
     directly into the template. Also loads any previously saved maps for
     the logged-in user.
     """
+    map_id = request.args.get("map_id")
+
     election_data, voter_counts = get_election_game_data()
     adjacency_map = build_adjacency_map(election_data)
     total_districts = len(election_data["features"])
@@ -596,7 +599,8 @@ def game_get():
         voter_counts=json.dumps(voter_counts),
         total_districts=total_districts,
         saved_maps=json.dumps(saved_maps),
-        saved_maps_parsed=saved_maps   # raw Python list for Jinja {% for %} loop
+        saved_maps_parsed=saved_maps,   # raw Python list for Jinja {% for %} loop
+        load_map_id = map_id
     )
  
  
@@ -630,35 +634,31 @@ def game_save():
     """
     Save a completed game to the database.
     Inserts one row into saved_maps and one row into map_gmed.
-    Each of the 25 district columns stores a JSON array of election district IDs.
+    Each of the 20 district columns stores a JSON array of election district IDs.
  
     Request: {
         "map_name": "My Map",
         "assembly_districts": [
             { "id": 1, "electionDistricts": [1001, 1002, ...], "winner": "DEM" },
-            ... (25 total)
+            ... (20 total)
         ]
     }
     Response: { "success": true, "map_id": 5 }
               { "success": false, "message": "..." }
     """
-    username = session.get("username")
-    if not username:
-        return make_json_response({"success": False, "message": "Not logged in."}, 401)
  
-    user_id = get_user_id(username)
-    if not user_id:
-        return make_json_response({"success": False, "message": "User not found."}, 400)
- 
+    user = get_user_id(session["username"])
+
     data = request.get_json()
     map_name = data.get("map_name", "").strip()
+    player_party = data.get("player_party", "DEM")
     assembly_districts = data.get("assembly_districts", [])
  
     if not map_name:
         return make_json_response({"success": False, "message": "Map name cannot be empty."}, 400)
  
-    if len(assembly_districts) != 25:
-        return make_json_response({"success": False, "message": "Must have exactly 25 assembly districts."}, 400)
+    if len(assembly_districts) != 20:
+        return make_json_response({"success": False, "message": "Must have exactly 20 assembly districts."}, 400)
  
     # Sort by id so district1 always = assembly district 1
     assembly_districts = sorted(assembly_districts, key=lambda d: d["id"])
@@ -667,13 +667,6 @@ def game_save():
     cur = conn.cursor()
  
     try:
-        # Insert the map header row first to get the auto-incremented map_id
-        cur.execute(
-            "INSERT INTO saved_maps (user_id, map_name) VALUES (?, ?)",
-            (user_id, map_name)
-        )
-        map_id = cur.lastrowid
- 
         # Each district column gets a JSON array of the election district IDs it contains
         district_cols = [
             json.dumps([int(eid) for eid in ad["electionDistricts"]])
@@ -682,20 +675,22 @@ def game_save():
  
         cur.execute(
             """
-            INSERT INTO map_gmed (
-                map_id, user_id,
+            INSERT INTO saved_maps (
+                user_id, map_name, player_party,
                 district1,  district2,  district3,  district4,  district5,
                 district6,  district7,  district8,  district9,  district10,
                 district11, district12, district13, district14, district15,
-                district16, district17, district18, district19, district20,
-                district21, district22, district23, district24, district25
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                district16, district17, district18, district19, district20
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            [map_id, user_id] + district_cols
+            [user, map_name, player_party] + district_cols
         )
+        map_id = cur.lastrowid
  
         conn.commit()
         conn.close()
+
+        print("Saving map:", map_name, "for user:", user)
         return make_json_response({"success": True, "map_id": map_id})
  
     except sqlite3.IntegrityError:
@@ -710,7 +705,7 @@ def game_save():
 @app.post('/game/score')
 def game_score():
     """
-    Score all 25 finalized assembly districts.
+    Score all 20 finalized assembly districts.
     Request: {
         "player_party": "DEM",
         "assembly_districts": [ { "id": 1, "election_districts": [1001, ...] }, ... ],
@@ -719,10 +714,11 @@ def game_score():
     Response: {
         "results": [ { "id": 1, "winner": "DEM", "totals": {...} }, ... ],
         "player_seats": 14,
-        "total_seats": 25,
+        "total_seats": 20,
         "won": true
     }
     """
+    user = get_user_id(session["username"])
     data = request.get_json()
     player_party = data.get("player_party", "DEM")
     assembly_districts = data.get("assembly_districts", [])
@@ -748,6 +744,21 @@ def game_score():
         if winner == player_party:
             player_seats += 1
  
+    win_int = int(player_seats > 10)
+
+    conn = sqlite3.connect(DB_FILE)
+    cur = conn.cursor()
+
+    cur.execute(
+            """
+            UPDATE profiles SET total_maps = total_maps + 1, wins = wins + ? WHERE id = ?
+            """,
+            (win_int, user)
+        )
+ 
+    conn.commit()
+    conn.close()
+
     return make_json_response({
         "results": results,
         "player_seats": player_seats,
@@ -766,10 +777,26 @@ def home_get():
 @app.get('/profile')
 def profile_get():
     # Grabbing the current logged in user
-    user = utility.get_user(session["username"])
+    user = get_user_id(session["username"])
+
+    conn = sqlite3.connect(DB_FILE)
+    cur = conn.cursor()
+
+    cursor = cur.execute(
+            """
+            SELECT total_maps, wins FROM profiles WHERE id = ?
+            """,
+            (user,)
+        )
+    
+    output = cursor.fetchone()
+    
+    total_maps, wins = output[0], output[1]
+
+    conn.close()
 
     # Show the profile page
-    return render_template('profile.html', user=user)
+    return render_template('profile.html', user=user, total_maps=total_maps, wins=wins)
 
 if __name__ == '__main__':
     # Run the Flask app in debug mode

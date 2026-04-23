@@ -12,11 +12,24 @@
 
 <h1 class="text-center pb-4">Welcome, <strong>{{ session["username"] }}</strong>!</h1>
 
-<div class="mb-4">
-  <h3>Your Stats(add map count later)</h3>
+<div class="col-md-9 mx-auto mb-4">
+  <h2><strong>Stats</strong></h2>
 </div>
 
+<div class="col-md-9 mx-auto mb-4">
+  <h5>Maps Created: {{total_maps}}</h5>
+</div>
 
-<h3>Maps Created</h3>
+<div class="col-md-9 mx-auto mb-4">
+  <h5>Total Wins: {{wins}}</h5>
+</div>
+
+{% for sm in saved_maps %}
+<a href="{{ url_for('game_get') }}?map_id={{ sm.map_id }}"
+   class="list-group-item list-group-item-action">
+    <strong>{{ sm.map_name }}</strong>
+    <small class="text-muted ml-2">{{ sm.created_at[:10] }}</small>
+</a>
+{% endfor %}
 
 {% endblock %}

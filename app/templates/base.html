@@ -19,7 +19,7 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('home_get') }}">Voting/Income</a>
+      <a class="navbar-brand" href="{{ url_for('home_get') }}">NYC Voter/Income Explorer</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" style="outline: none;">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -27,10 +27,13 @@
         <ul class="navbar-nav mr-auto">
           {% if "username" in session %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout_get') }}">Log Out</a>
+            <a class="nav-link" href="{{ url_for('profile_get') }}">Profile</a>
           </li>
           <li>
             <a class="nav-link" href="{{ url_for('game_get') }}">Game</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.logout_get') }}">Log Out</a>
           </li>
           {% else %}
           <li class="nav-item">

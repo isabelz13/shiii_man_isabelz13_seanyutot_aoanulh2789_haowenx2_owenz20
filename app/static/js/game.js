@@ -96,9 +96,7 @@ function loadSavedMap(mapId) {
     const saved = SAVED_MAPS.find(m => m.map_id === mapId);
     if (!saved) return;
 
-    const party = prompt('Which party did you draw for? (DEM or REP)', 'DEM');
-    if (!party) return;
-    playerParty = party.toUpperCase();
+    
 
     $('#startModal').modal('hide');
     document.getElementById('header-party-badge').textContent = playerParty;
@@ -393,7 +391,7 @@ async function saveMap() {
     const feedback = document.getElementById('save-feedback');
     const saveBtn = document.getElementById('btn-save-map');
     const name = nameInput.value.trim();
-
+    
     if (!name) {
         feedback.textContent = 'Enter a name first.';
         feedback.className = 'mt-2 small text-danger';
@@ -415,6 +413,7 @@ async function saveMap() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 map_name: name,
+                player_party: playerParty,
                 assembly_districts: state.finalized.map(d => ({
                     id: d.id,
                     electionDistricts: d.electionDistricts,
@@ -497,5 +496,9 @@ function setMessage(text, type) {
 document.addEventListener("DOMContentLoaded", function () {
     initMap();
     updateProgress();
-    $('#startModal').modal('show');
+    if (LOAD_MAP_ID) {
+        loadSavedMap(parseInt(LOAD_MAP_ID));
+    } else {
+        $('#startModal').modal('show');
+    }
 });
