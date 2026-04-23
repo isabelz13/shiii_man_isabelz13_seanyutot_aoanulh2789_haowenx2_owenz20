@@ -2,7 +2,7 @@
 # shiii_man
 # SoftDev
 # P04
-# 2026-04-20m
+# 2026-04-22w
 
 from flask import Flask, render_template, request, flash, url_for, redirect, session
 import folium
@@ -539,6 +539,7 @@ def game_get():
     the logged-in user.
     """
     map_id = request.args.get("map_id")
+    print("map_id:", map_id)
 
     election_data, voter_counts = get_election_game_data()
     adjacency_map = build_adjacency_map(election_data)

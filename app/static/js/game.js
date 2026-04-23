@@ -122,10 +122,11 @@ function startGame(party) {
 }
 
 function loadSavedMap(mapId) {
-    const saved = SAVED_MAPS.find(m => m.map_id === mapId);
+    const saved = SAVED_MAPS.find(m => m.map_id === parseInt(LOAD_MAP_ID));
     if (!saved) return;
 
-    
+    playerParty = saved.player_party || 'DEM';
+    const districtsToLoad = saved.assembly_districts.slice(0, MAX_ASSEMBLY);
 
     playerParty = saved.player_party;
     $('#startModal').modal('hide');
@@ -521,7 +522,10 @@ function setMessage(text, type) {
     el.className = `alert ${type} py-2 small`;
 }
 
+
+
 document.addEventListener("DOMContentLoaded", function () {
+    console.log(LOAD_MAP_ID, SAVED_MAPS)
     initMap();
     updateProgress();
     if (LOAD_MAP_ID) {
