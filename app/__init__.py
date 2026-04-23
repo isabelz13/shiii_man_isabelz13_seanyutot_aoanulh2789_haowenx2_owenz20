@@ -555,7 +555,7 @@ def game_get():
             cur = conn.cursor()
             rows = cur.execute(
                 """
-                SELECT map_id, map_name, created_at,
+                SELECT map_id, map_name, player_party, created_at,
                        district1,  district2,  district3,
                        district4,  district5,  district6,
                        district7,  district8,  district9,
@@ -572,7 +572,7 @@ def game_get():
             conn.close()
  
             for row in rows:
-                map_id, map_name, created_at = row[0], row[1], row[2]
+                map_id, map_name, player_party, created_at = row[0], row[1], row[2], row[3]
                 # Columns 3-27 are district1..district25, each a JSON array of election IDs
                 assembly_districts = []
                 for i, raw in enumerate(row[3:], start=1):
@@ -589,6 +589,7 @@ def game_get():
                     "map_id": map_id,
                     "map_name": map_name,
                     "created_at": created_at,
+                    "player_party": player_party,
                     "assembly_districts": assembly_districts
                 })
  
@@ -793,10 +794,19 @@ def profile_get():
     
     total_maps, wins = output[0], output[1]
 
+    cursor = cur.execute(
+            """
+            SELECT map_id, map_name, created_at FROM saved_maps WHERE user_id = ?
+            """,
+            (user,)
+        )
+    
+    saved_maps = cursor.fetchall()
+
     conn.close()
 
     # Show the profile page
-    return render_template('profile.html', user=user, total_maps=total_maps, wins=wins)
+    return render_template('profile.html', user=user, total_maps=total_maps, wins=wins, saved_maps=saved_maps)
 
 if __name__ == '__main__':
     # Run the Flask app in debug mode
