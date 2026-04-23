@@ -11,7 +11,7 @@
 Gerrymandering has been long part of American politics but is a complex process involving many demographic layers considered when redrawing district lines. This simulation attempts to educate users in understanding how their legislature may be considering their area's income level along with party registration data in order to determine how to draw district lines for the upcoming election taking into consideration trends of income with voting patterns.
 
 ## Live Site:
-Our program is hosted live [here](http://45.55.195.253)
+Our program is hosted live [here](http://161.35.189.176)
 
 ### FEATURE SPOTLIGHT
 * Hover over election district to see stats breakdown
