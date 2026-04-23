@@ -3,7 +3,7 @@
 ## Roster/Roles:
 - Isabel Zheng (PM): database management, general debugging 
 - Araf Hoque: folium mapping
-- Sean Takahashi: data management, data linkage to map using pandas
+- Sean Takahashi: data management, data linkage to map using pandas, VM, game debugging
 - Haowen Xiao: CSS, testing app, map configurations
 - Owen Zeng: gerrymandering game
 
@@ -15,9 +15,11 @@ Our program is hosted live [here](http://45.55.195.253)
 
 ### FEATURE SPOTLIGHT
 * Hover over election district to see stats breakdown
+* Try to gerrymander through the 5000+ election districts in NYC
 
 ### KNOWN BUGS/ISSUES
-* Game can cause timeout error
+* When loading previous maps, it may show 21/20 assigned districts but the DEM/REP counting is accurate.
+* Non-residential areas(parks, graveyards, etc.) can show as election districts in the map due to the data we used.
 
 ## Install Guide:
 
@@ -40,6 +42,9 @@ For Windows users
 $ venv\Scripts\activate
 $ pip install -r requirements.txt
 ```
+
+Now open on [localhost](127.0.0.0:5000)
+
 ## Launch Codes:
 In terminal, access project root directory and run the command:
 
