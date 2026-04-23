@@ -174,39 +174,16 @@ def build_map():
         max_lon=-73.65,
         tiles="CartoDB Positron"
     )
-
-    # Connect to the database
-    conn = sqlite3.connect(DB_FILE)
-    cur = conn.cursor()
-
-    # Pull income data from the database
-    income_rows = cur.execute("SELECT zip, median_income FROM income").fetchall()
-
-    # Pull voter data from the database
-    voter_rows = cur.execute("SELECT AssemblyDistrict, ElectionDistrict, PoliticalParty FROM voter").fetchall()
-
-    # Pull zipcode geojson from the database
-    zip_rows = cur.execute("SELECT geojson FROM zipcodes").fetchall()
-
-    # Pull election geojson from the database
-    elec_rows = cur.execute("SELECT geojson FROM election").fetchall()
-
-    # Close the database connection since we already got what we need
-    conn.close()
-
-    # Turn the raw database rows into pandas dataframes
-    income_data = pd.DataFrame(income_rows, columns=["ZIP", "MedianIncome"])
-    voter_data = pd.DataFrame(voter_rows, columns=["AssemblyDistrict", "ElectionDistrict", "PoliticalParty"])
-
-    # Rebuild the zipcode feature collection from the stored geojson
-    zipcode_data = {"type": "FeatureCollection", "features": [json.loads(row[0]) for row in zip_rows]}
-
-    # Rebuild the election feature collection from the stored geojson
-    election_data = {"type": "FeatureCollection", "features": [json.loads(row[0]) for row in elec_rows]}
-
-    # Cleaning up property names so its compatible with folium
-    zipcode_data = clean_geojson(zipcode_data)
-    election_data = clean_geojson(election_data)
+    
+    data_folder = BASE_DIR / "data"
+    income_data = pd.read_csv (data_folder / "IncomeData.csv")
+    voter_data = pd.read_csv (data_folder / "VoteRegistration2018.csv") 
+    with open (data_folder / "ZipCode.geojson") as f:
+        zipcode_data = json.load (f) 
+    with open (data_folder / "nyed_18d.geojson") as f: 
+        election_data = json.load(f) 
+    zipcode_data = clean_geojson (zipcode_data) 
+    election_data = clean_geojson (election_data) 
 
     # Making a feature group for the election district layer
     election_fg = folium.FeatureGroup(name="Election Districts", show=True)
