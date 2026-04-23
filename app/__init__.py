@@ -550,10 +550,10 @@ def game_get():
             conn.close()
  
             for row in rows:
-                map_id, map_name, player_party, created_at = row[0], row[1], row[2], row[3]
-                # Columns 3-27 are district1..district25, each a JSON array of election IDs
+                r_map_id, map_name, player_party, created_at = row[0], row[1], row[2], row[3]
+                # Columns 3-27 are district1..district20, each a JSON array of election IDs
                 assembly_districts = []
-                for i, raw in enumerate(row[3:], start=1):
+                for i, raw in enumerate(row[4:], start=1):
                     if raw:
                         try:
                             election_ids = json.loads(raw)
@@ -564,7 +564,7 @@ def game_get():
                             "electionDistricts": election_ids
                         })
                 saved_maps.append({
-                    "map_id": map_id,
+                    "map_id": r_map_id,
                     "map_name": map_name,
                     "created_at": created_at,
                     "player_party": player_party,
